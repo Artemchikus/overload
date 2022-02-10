@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	stresstest "overload/internal/business/stressTest"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,8 +20,9 @@ const (
 
 // Игорь, я хз как это назвать!!!!(не конфиг же это)
 type server struct {
-	router *mux.Router
-	logger *zap.SugaredLogger
+	router     *mux.Router
+	logger     *zap.SugaredLogger
+	stresstest *stresstest.Business
 }
 
 // функция возвращения сконфигурированного сервера
@@ -30,10 +32,13 @@ func newServer() *server {
 	defer log.Sync()
 	sugar := log.Sugar()
 
+	test := stresstest.New()
+
 	// конфигкрация сервера
 	s := &server{
-		router: mux.NewRouter(),
-		logger: sugar,
+		router:     mux.NewRouter(),
+		logger:     sugar,
+		stresstest: test,
 	}
 
 	s.configureRouter() // конфигурация всех URL оработчиков запросов
@@ -129,7 +134,7 @@ func (s *server) handleDDOS() http.HandlerFunc {
 
 // функция для получения инфы о результатах тестирования, если добавим бд
 func (s *server) handleInfo() http.HandlerFunc {
-	// получение результатов будет по уникальному id 
+	// получение результатов будет по уникальному id
 	type request struct {
 		UserID string `json:"user_id"`
 	}
