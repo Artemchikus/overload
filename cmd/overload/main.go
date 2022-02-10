@@ -9,22 +9,23 @@ import (
 )
 
 var (
-	configPath string
+	configPath string // путь к кнофигу
 )
 
 func init() {
-	flag.StringVar(&configPath, "config_path", "configs/overload.toml", "path to config file")
+	flag.StringVar(&configPath, "config_path", "configs/overload.toml", "path to config file") // назначение флага и дефолтного значения переменной пути
 }
 
 func main() {
-	flag.Parse()
+	flag.Parse() // парсинг флага
 
-	config := apiserver.NewConfig()
-	_, err := toml.DecodeFile(configPath, config)
+	config := apiserver.NewConfig() // получение конфига сервера по умолчанию
+	_, err := toml.DecodeFile(configPath, config) // заполнения полей конфига значениями из томл файла
 	if err != nil {
 		log.Fatal(err)
-	}
+	} 
 
+	// запуск сервера
 	log.Printf("Starting API server on port %s", config.BindAddr)
 	if err := apiserver.Start(config); err != nil {
 		log.Fatal(err)

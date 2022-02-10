@@ -2,6 +2,7 @@ package models
 
 import "time"
 
+// стурктура конфига, который должен предоставить пользователь для стресс темтирования
 type UserConfig struct {
 	ID        int       `json:"id"`
 	ReqURL    string    `json:"url"`
