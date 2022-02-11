@@ -4,7 +4,7 @@ import "time"
 
 // стурктура конфига, который должен предоставить пользователь для стресс темтирования
 type UserConfig struct {
-	ID        int       `json:"id"`
+	ID        string    `json:"-"`
 	ReqURL    string    `json:"url"`
 	ReqMethod string    `json:"url_method"`
 	ReqBody   string    `json:"body"`

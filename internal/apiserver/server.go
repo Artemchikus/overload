@@ -3,8 +3,11 @@ package apiserver
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"overload/internal/business"
 	stresstest "overload/internal/business/stressTest"
+	"overload/internal/models"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,7 +25,7 @@ const (
 type server struct {
 	router     *mux.Router
 	logger     *zap.SugaredLogger
-	stresstest *stresstest.Business
+	stresstest business.Business
 }
 
 // функция возвращения сконфигурированного сервера
@@ -32,9 +35,9 @@ func newServer() *server {
 	defer log.Sync()
 	sugar := log.Sugar()
 
-	test := stresstest.New()
+	test := stresstest.New() // создание экземпляра бизнес логики по стресс тестам
 
-	// конфигкрация сервера
+	// конфигурация сервера стресс тестов
 	s := &server{
 		router:     mux.NewRouter(),
 		logger:     sugar,
@@ -105,36 +108,36 @@ func (s *server) logRequest(next http.Handler) http.Handler {
 
 // функция обработки запросов на стресс тестирование
 func (s *server) handleDDOS() http.HandlerFunc {
-	// ожидаемый формат запроса на тестирование
-	type request struct {
-		ReqURL    string    `json:"url"`
-		ReqMethod string    `json:"url_method"`
-		ReqBody   string    `json:"body"`
-		NumOfReq  int       `json:"number_of_requests"`
-		ReqPerMin int       `json:"requests_per_min"`
-		Start     time.Time `json:"start"`
-		End       time.Time `json:"end"`
-	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := &request{}
+		req := &models.UserConfig{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		} // декодирование тела json запроса в структкру
 
-		//Validation...
+		req.ID = fmt.Sprintf("%s", r.Context().Value(ctxKeyRequestID))
 
-		//Busness logic...
+		if err := s.stresstest.Validate(req); err != nil {
+			s.error(w, r, http.StatusUnprocessableEntity, err)
+			return
+		} // валидация данных
+
+		metric, err := s.stresstest.Test(req) // получение метрик
+		if err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
 
 		//Returning Metrics if there is no db...
 
-		s.respond(w, r, http.StatusOK, nil)
+		s.respond(w, r, http.StatusOK, metric)
 	}
 }
 
 // функция для получения инфы о результатах тестирования, если добавим бд
 func (s *server) handleInfo() http.HandlerFunc {
-	// получение результатов будет по уникальному id
+
+	// получение результатов будет по уникальному id (ожидаемый формат json)
 	type request struct {
 		UserID string `json:"user_id"`
 	}
