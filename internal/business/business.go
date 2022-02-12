@@ -2,7 +2,7 @@ package business
 
 import "overload/internal/models"
 
-type Business interface {
-	Test(*models.UserConfig) (*models.Metric, error)
-	Validate(*models.UserConfig) error
+type Tester interface {
+	Test(config *models.TestingConfig) (*models.Metric, error)
+	Validate(config *models.TestingConfig) error
 }

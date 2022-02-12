@@ -15,20 +15,20 @@ import (
 	"go.uber.org/zap"
 )
 
-type ctxKey int8 // новый тип данных необходимый для работы с контекстом
+type ctxKey int8 // Новый тип данных необходимый для работы с контекстом
 
 const (
-	ctxKeyRequestID ctxKey = iota // конеткстная перменая для доступа к id запроса
+	ctxKeyRequestID ctxKey = iota // Контекстная ферменная для доступа к id запроса
 )
 
-// Игорь, я хз как это назвать!!!!(не конфиг же это)
+// server struct
 type server struct {
-	router     *mux.Router
-	logger     *zap.SugaredLogger
-	stresstest business.Business
+	router *mux.Router
+	logger *zap.SugaredLogger
+	tester business.Tester
 }
 
-// функция возвращения сконфигурированного сервера
+// Функция возвращения сконфигурированного сервера
 func newServer() *server {
 	// инициализация "сахарного" логгера
 	log, _ := zap.NewProduction()
@@ -39,9 +39,9 @@ func newServer() *server {
 
 	// конфигурация сервера стресс тестов
 	s := &server{
-		router:     mux.NewRouter(),
-		logger:     sugar,
-		stresstest: test,
+		router: mux.NewRouter(),
+		logger: sugar,
+		tester: test,
 	}
 
 	s.configureRouter() // конфигурация всех URL оработчиков запросов
@@ -109,20 +109,20 @@ func (s *server) logRequest(next http.Handler) http.Handler {
 // функция обработки запросов на стресс тестирование
 func (s *server) handleDDOS() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := &models.UserConfig{}
+		req := &models.TestingConfig{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
-		} // декодирование тела json запроса в структкру
+		} // декодирование тела json запроса в структуру
 
 		req.ID = fmt.Sprintf("%s", r.Context().Value(ctxKeyRequestID))
 
-		if err := s.stresstest.Validate(req); err != nil {
+		if err := s.tester.Validate(req); err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return
 		} // валидация данных
 
-		metric, err := s.stresstest.Test(req) // получение метрик
+		metric, err := s.tester.Test(req) // получение метрик
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
