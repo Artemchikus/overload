@@ -5,3 +5,13 @@ content-type: application/json
     "email":"user@gmail.com",
     "password":"password"
 }
+
+###
+
+POST http://localhost:8080/test
+content-type: application/json
+
+{
+    "email":"user@gmail.com",
+    "password":"password"
+}
