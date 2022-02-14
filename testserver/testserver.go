@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -16,8 +18,8 @@ func main() {
 
 func handleTest() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Getting request number: %v", requestNumber)
 		requestNumber++
+		log.Printf("Getting request number: %v", requestNumber)
 		w.WriteHeader(http.StatusOK)
 	}
 }
@@ -25,7 +27,8 @@ func handleTest() http.HandlerFunc {
 func handleReset() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Reseting number of requests")
-		requestNumber = 0
 		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"number_of_requests": fmt.Sprint(requestNumber)})
+		requestNumber = 0
 	}
 }
