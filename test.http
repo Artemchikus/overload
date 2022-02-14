@@ -25,3 +25,23 @@ content-type: application/json
     "email":"user@gmail.com",
     "password":"password"
 }
+
+
+###
+POST http://45.8.228.5:7070/test
+content-type: application/json
+
+{
+    "email":"user@gmail.com",
+    "password":"password"
+}
+
+###
+
+POST http://45.8.228.5:7070/reset
+content-type: application/json
+
+{
+    "email":"user@gmail.com",
+    "password":"password"
+}
