@@ -1,0 +1,27 @@
+FROM golang:1.17-alpine3.13 as build
+
+ENV GOOS linux
+
+ENV CGO_ENABLED 0
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+RUN go build -o app ./cmd/overload/main.go
+
+
+
+FROM alpine:3.14 as production
+
+RUN apk add --no-cache ca-certificates
+
+COPY --from=build app .
+
+EXPOSE 4000
+
+CMD ./app
