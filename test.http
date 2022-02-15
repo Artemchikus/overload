@@ -2,8 +2,10 @@ POST http://localhost:8080/setConfig
 content-type: application/json
 
 {
-    "email":"user@gmail.com",
-    "password":"password"
+  "url": "http://localhost:8000/test",
+  "method": "GET",
+  "rps": 200,
+  "testing_duration": 30
 }
 
 ###
@@ -18,7 +20,7 @@ content-type: application/json
 
 ###
 
-POST http://localhost:8080/reset
+GET http://localhost:8000/reset
 content-type: application/json
 
 {

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"overload/internal/business"
-	stresstest "overload/internal/business/stressTest"
+	"overload/internal/business/stresstest"
 	"overload/internal/models"
 	"time"
 
@@ -109,7 +109,9 @@ func (s *server) logRequest(next http.Handler) http.Handler {
 // функция обработки запросов на стресс тестирование
 func (s *server) handleDDOS() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := &models.TestingConfig{}
+		req := &models.TestingConfig{
+			ID: fmt.Sprint(ctxKeyRequestID),
+		}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
@@ -122,7 +124,8 @@ func (s *server) handleDDOS() http.HandlerFunc {
 			return
 		} // валидация данных
 
-		metric, err := s.tester.Test(req) // получение метрик
+		metric, err := s.tester.
+			Test(req) // получение метрик
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
