@@ -2,9 +2,9 @@ POST http://localhost:8080/setConfig
 content-type: application/json
 
 {
-  "url": "http://localhost:8000/test",
+  "url": "http://45.8.228.5:7070/test",
   "method": "GET",
-  "rps": 200,
+  "rps": 600,
   "testing_duration": 30
 }
 

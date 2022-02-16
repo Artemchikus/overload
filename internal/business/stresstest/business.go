@@ -33,6 +33,8 @@ func New() *Tester {
 }
 
 func (b *Tester) Test(config *models.TestingConfig) (*models.Metric, error) {
+	resp := &models.Metric{}
+
 	log := b.logger.With("request_id", config.ID, "func", "test")
 	resps := make(chan *models.ResponseInfo)
 	wg := sync.WaitGroup{}
@@ -42,7 +44,7 @@ func (b *Tester) Test(config *models.TestingConfig) (*models.Metric, error) {
 		defer wgChan.Done()
 		now := time.Now()
 		medianTime := time.Duration(0)
-		totalRequests := 0
+		totalRequests := uint64(0)
 		codesToAmount := make(map[int]uint32)
 		for resp := range resps {
 			totalRequests++
@@ -55,6 +57,13 @@ func (b *Tester) Test(config *models.TestingConfig) (*models.Metric, error) {
 			codesToAmount[resp.Status]++
 		}
 		medianTime /= time.Duration(totalRequests)
+		testingTime := time.Since(now)
+		resp = &models.Metric{
+			CodeToAmount:       codesToAmount,
+			TotalRequests:      totalRequests,
+			MedianResponseTime: uint64(medianTime.Milliseconds()),
+			TestingTime:        testingTime.Seconds(),
+		}
 		log.Info(fmt.Sprintf("Test ended in %d, with total %d requests\n"+
 			"response codes: %v, median response time: %f m. / %f s. / %d ms.",
 			time.Since(now),
@@ -66,7 +75,7 @@ func (b *Tester) Test(config *models.TestingConfig) (*models.Metric, error) {
 	}(resps)
 	for i := int64(0); i < config.DurationUNIX; i++ {
 		now := time.Now()
-		for j := int32(0); j <= config.RPS; j++ {
+		for j := int32(0); j < config.RPS; j++ {
 			go func() {
 				wg.Add(1)
 				defer wg.Done()
@@ -103,5 +112,5 @@ func (b *Tester) Test(config *models.TestingConfig) (*models.Metric, error) {
 	//log.Info("Логирую(удали меня)")
 
 	wgChan.Wait()
-	return nil, nil
+	return resp, nil
 }
