@@ -22,6 +22,6 @@ RUN apk add --no-cache ca-certificates
 
 COPY --from=build app .
 
-EXPOSE 4000
+EXPOSE 8080
 
 CMD ./app
