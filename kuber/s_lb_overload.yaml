@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata: 
+  name: overload-lb
+spec: 
+  type: LoadBalancer
+  sessionAffinity: ClientIP
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: http
+  selector: 
+    app: overload
+    env: prod
+

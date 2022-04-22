@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: overload-d
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  selector:
+    matchExpressions: 
+    - key: app
+      operator: In
+      values:
+      - overload
+    - key: env
+      operator: In
+      values:
+      - prod
+  template:
+    metadata:
+      labels:
+        creation_method: deployment
+        env: prod
+        app: overload
+    spec:
+      affinity:
+        nodeAffinity:
+          preferedDuringSchedulingIgnoreDuringExectution:
+          - weight: 80
+            preference:
+            - matchExpressions:
+              - key: nodeType
+                opertor: In
+                values:
+                - prod
+      containers:
+      - image: artemchikus/overload:overload
+        resources:
+          limits:
+            cpu: 1
+            memory: 20Mi
+          requests:
+            cpu: 300m
+            memory: 10Mi
+        imagePullPolicy: Always
+        name: overload-d
+        ports: 
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        readinessProbe:
+          httpGet: 
+            path: /alive
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10

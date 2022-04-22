@@ -75,6 +75,7 @@ func (s *server) configureRouter() {
 	// обработка URL-ов
 	s.router.HandleFunc("/setConfig", s.handleDDOS()).Methods("POST")
 	s.router.HandleFunc("/getInfo", s.handleInfo()).Methods("POST")
+	s.router.HandleFunc("/alive", s.handleAlive()).Methods("GET")
 }
 
 // функция прописывания уникального id запроса в заголовке ответа
@@ -152,5 +153,12 @@ func (s *server) handleInfo() http.HandlerFunc {
 		} // декодирование тела json запроса в структкру
 
 		s.respond(w, r, http.StatusOK, nil)
+	}
+}
+
+// функция проверки живости
+func (s *server) handleAlive() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request){
+		s.respond(w,r,http.StatusOK, map[string]string{"status": "OK"}) 
 	}
 }

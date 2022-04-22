@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata: 
+  name: overload-np
+spec:
+  type: NodePort
+  sessionAffinity: ClientIP
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: http
+    nodePort: 30123
+  selector: 
+    app: overload
+    env: test
+

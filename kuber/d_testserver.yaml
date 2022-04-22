@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: testserver-d
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  selector:
+    matchExpressions: 
+    - key: app
+      operator: In
+      values:
+      - testserver
+    - key: env
+      operator: In
+      values:
+      - prod
+  template:
+    metadata:
+      labels:
+        creation_method: deployment
+        env: prod
+        app: testserver
+    spec:
+      affinity:
+        nodeAffinity:
+          preferedDuringSchedulingIgnoreDuringExectution:
+          - weight: 80
+            preference:
+            - matchExpressions:
+              - key: nodeType
+                opertor: In
+                values:
+                - prod
+          podAffinity:
+            preferedDuringSchedulingIgnoreDuringExectution:
+            - weight: 80
+              podAffinityTerm: 
+                toplologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: overload
+      containers:
+      - image: artemchikus/overload:testserver
+        imagePullPolicy: Always
+        name: testserver-d
+        ports: 
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        readinessProbe:
+          httpGet: 
+            path: /alive
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10

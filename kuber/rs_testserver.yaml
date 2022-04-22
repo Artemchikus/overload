@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: testserver
+spec:
+  replicas: 1
+  selector:
+    matchExpressions: 
+    - key: app
+      operator: In
+      values:
+      - testserver
+    - key: env
+      operator: In
+      values:
+      - prod
+  template:
+    metadata:
+      labels:
+        creation_method: replicaSet
+        env: prod
+        app: testserver
+    spec:
+      nodeSelector:
+        nodeType: prod
+      containers:
+      - image: artemchikus/overload:testserver
+        imagePullPolicy: Always
+        name: testserver-rs
+        ports: 
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        livenessProbe:
+          httpGet: 
+            path: /alive
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10

@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-services
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: kube.example.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: /overload(/|$)(.*)
+        backend:
+          service:
+            name: overload-lb
+            port: 
+              number: 80
+      - pathType: Prefix
+        path: /testserver(/|$)(.*)
+        backend:
+          service:
+            name: testserver-lb
+            port: 
+              number: 80

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: base-rq
+spec:
+  hard: 
+    requests.cpu: 1
+    requests.memory: 8Gi
+    limits.cpu: 1500m
+    limits.memory: 14Gi
+    pods: 10
+    secrets: 4
+    configmaps: 4
+    persistentvolumeclaims: 2
+    services: 6
+    services.loadbalancers: 2
+    services.nodeports: 3
+    nfs-storage.storageclass.storage.k8s.io/persistentvolumeclaims: 2

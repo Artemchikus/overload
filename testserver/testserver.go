@@ -15,7 +15,8 @@ const port = ":8000"
 func main() {
 	http.HandleFunc("/test", handleTest())
 	http.HandleFunc("/reset", handleReset())
-	log.Printf("Starting API server on port %s", port)
+	http.HandleFunc("/alive", handleAlive())
+	log.Printf("Starting API testserver on port %s", port)
 	http.ListenAndServe(port, nil)
 }
 
@@ -36,5 +37,13 @@ func handleReset() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]string{"number_of_requests": fmt.Sprint(requestNumber)})
 		requestNumber = 0
+	}
+}
+
+func handleAlive() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {	
+		log.Println("Alive test passed")	
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"status": "OK"})
 	}
 }

@@ -1,0 +1,113 @@
+virtualbo:
+ssh root@192.168.0.107 
+(kubeAdmin)
+export KUBECONFIG=/etc/kubernetes/admin.conf
+kubectl get no
+exit
+$Env:KUBECONFIG="$Env:KUBECONFIG;$HOME\.kube\config2"
+kubectl get no
+
+
+nodes: 
+  kubectl label no "kube-test" nodeType=test
+  kubectl label no "kube-prod" nodeType=prod
+  kubectl label no "kube-master" nodeType=master
+
+pods:
+  kubectl create -f pod_overload.yaml 
+  kubectl create -f pod_testserver.yaml 
+
+replicaSet:
+  kubectl create -f rs_overload.yaml 
+  kubectl create -f rs_testserver.yaml 
+
+services:
+  nodePort:
+    kubectl create -f s_np_overload.yaml 
+    kubectl create -f s_np_testserver.yaml 
+  LoadBalancer:
+    kubectl create -f s_lb_overload.yaml
+    kubectl create -f s_lb_testserver.yaml
+  Ingress:
+    kubectl create -f ingress.yaml
+
+deployment:
+  kubectl create -f d_testserver.yaml
+  kubectl create -f d_overload.yaml
+
+configMap:
+  kubectl create -f cm_overload.yaml
+  kubectl create -f cm_testserver.yaml
+
+secret:
+  kubectl create -f secret.yaml
+  
+presistentVolume:
+  kubectl create -f pv_test.yaml
+  kubectl create -f prometheus/pv.yaml
+
+storageClass:
+  kubectl create -f sc_nfs.yaml
+
+presistenVloumeClaim:
+  kubectl create -f pvc_test.yaml
+  kubectl create -f prometheus/pvc.yaml
+
+horizontalPodAutoscaller:
+  kubectl create -f hpa_overload.yaml
+  kubectl create -f hpa_testserver.yaml
+
+limitRange:
+  kubectl create limitR.yaml
+
+resourceQuota:
+  kubectl create resourceQ.yaml
+  
+test-pod-for-bash:
+  kubectl create -f test_pod.yaml
+
+prometheus:
+  kubectl create namespace monitoring
+  kubectl create -f prometheus/
+
+ingress:
+  kubectl create namespace ingress-nginx
+  kubectl create -f nginx-ingress/
+
+grafana:
+kubectl create -f prometheus/grafana/
+  dashboards:
+    1860
+    8588
+
+alertManager:
+kubectl create -f prometheus/alert-manager/
+
+kubeStateMetrcis:
+kubectl create -f prometheus/kube-state-metrics/
+
+nodeExporter:
+kubectl create -f prometheus/node-exporter/
+
+set namespace:
+kubectl config set-context --current --namespace=monitoring
+kubectl config set-context --current --namespace=default
+kubectl config set-context --current --namespace=metallb-system
+kubectl config set-context --current --namespace=ingress-nginx
+kubectl config set-context --current --namespace=custom-metrics
+
+metalLB:
+kubectl create -f metalLB/
+  secret: 
+  kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+
+apiServer:
+kubectl get --raw /
+kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq .  |findstr "pods/"
+
+premetheus-adapter:
+kubectl create namespace custom-metrics
+kubectl create -f prometheus/prometeus-adapter
+
+comand for watching: 
+kubectl get po --watch 
